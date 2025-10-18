@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartHome Buddy - Control por Voz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF6B8B;
+            --secondary: #4ECDC4;
+            --accent: #FFD166;
+            --dark: #2A2D43;
+            --light: #F7FFF7;
+            --shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Neue', cursive;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            animation: bounceIn 1s ease-out;
+        }
+
+        .login-screen h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3.5rem;
+            color: white;
+            text-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .login-form {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 3px solid var(--accent);
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-family: 'Comic Neue', cursive;
+        }
+
+        .login-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-family: 'Fredoka One', cursive;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.1);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 0 rgba(0,0,0,0.1);
+        }
+
+        .dashboard {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            color: var(--primary);
+            text-shadow: 2px 2px 0 var(--accent);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            border-radius: 15px;
+            background: var(--accent);
+            color: var(--dark);
+            font-family: 'Comic Neue', cursive;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 0 rgba(0,0,0,0.1);
+        }
+
+        .voice-control {
+            background: var(--primary);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .voice-control h2 {
+            color: white;
+            margin-bottom: 10px;
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .voice-control > p {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .voice-btn {
+            background: white;
+            border: none;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            cursor: pointer;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            font-size: 3rem;
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .voice-btn:active {
+            transform: scale(0.95);
+        }
+
+        .voice-btn.listening {
+            animation: pulse 1.5s infinite;
+            background: #FFD166;
+        }
+
+        .voice-status {
+            margin-top: 15px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            min-height: 35px;
+            color: white;
+        }
+
+        .voice-feedback {
+            margin-top: 10px;
+            font-size: 1.2rem;
+            min-height: 30px;
+            font-weight: bold;
+            color: white;
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .command-examples {
+            margin-top: 20px;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .device-card {
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+            background: #E0E0E0;
+            border: 4px solid #CCCCCC;
+        }
+
+        .device-card.active {
+            background: white;
+            border: 4px solid var(--accent);
+        }
+
+        .device-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .device-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            text-align: center;
+            filter: grayscale(100%);
+            opacity: 0.7;
+        }
+
+        .device-card.active .device-icon {
+            filter: grayscale(0%);
+            opacity: 1;
+        }
+
+        .device-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #666;
+        }
+
+        .device-card.active .device-name {
+            color: var(--dark);
+        }
+
+        .device-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .status-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #FF6B6B;
+        }
+
+        .status-indicator.on {
+            background: #4ECDC4;
+            animation: glow 1.5s infinite;
+        }
+
+        .status-text {
+            font-weight: bold;
+            color: #666;
+        }
+
+        .device-card.active .status-text {
+            color: var(--dark);
+        }
+
+        .device-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-family: 'Comic Neue', cursive;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .on-btn {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .off-btn {
+            background: #FF6B6B;
+            color: white;
+        }
+
+        .contact-page {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .contact-page h2 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .engineers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .engineer-card {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .engineer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        .engineer-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .engineer-role {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255,107,139,0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(255,107,139,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,107,139,0); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px var(--secondary); }
+            50% { box-shadow: 0 0 15px var(--secondary); }
+        }
+
+        .group-header {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            font-family: 'Fredoka One', cursive;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .device-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+
+            .engineers-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-screen h1 {
+                font-size: 2.5rem;
+            }
+
+            .device-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .engineers-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="login-screen" id="loginScreen">
+            <h1>🏠 SmartHome Buddy</h1>
+            <div class="login-form">
+                <h2>¡Bienvenido!</h2>
+                <input type="text" id="username" placeholder="Ingresa tu nombre">
+                <button class="login-btn" id="loginBtn">¡A Jugar!</button>
+            </div>
+        </div>
+
+        <div class="dashboard" id="dashboard">
+            <div class="header">
+                <div class="logo">🏠 SmartHome</div>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">K</div>
+                    <div class="welcome-text">¡Hola, <span id="userName">Niño</span>!</div>
+                </div>
+                <div class="nav">
+                    <button class="nav-btn" id="homeBtn">🏠 Inicio</button>
+                    <button class="nav-btn" id="contactBtn">👥 Contacto</button>
+                </div>
+            </div>
+
+            <div class="voice-control">
+                <h2>🎤 Control por Voz</h2>
+                <p>Presiona el micrófono y di un comando</p>
+                <button class="voice-btn" id="voiceBtn">🎤</button>
+                <div class="voice-status" id="voiceStatus">Presiona para hablar</div>
+                <div class="voice-feedback" id="voiceFeedback"></div>
+                <div class="command-examples">
+                    <strong>Ejemplos de comandos:</strong><br>
+                    "enciende las luces" • "apaga la televisión"<br>
+                    "prende el aire acondicionado" • "desactiva la música"
+                </div>
+            </div>
+
+            <div class="device-grid" id="deviceGrid"></div>
+        </div>
+
+        <div class="contact-page" id="contactPage">
+            <h2>👥 Nuestro Equipo de Ingenieros</h2>
+            <div class="engineers-grid">
+                <div class="engineer-card">
+                    <div class="engineer-name">Luan Vazques</div>
+                    <div class="engineer-role">Experto en Tecnología de Voz</div>
+                </div>
+                <div class="engineer-card">
+                    <div class="engineer-name">Rene Barrios</div>
+                    <div class="engineer-role">Diseñador de Interfaz</div>
+                </div>
+                <div class="engineer-card">
+                    <div class="engineer-name">Jorge Espindola</div>
+                    <div class="engineer-role">Arquitecto de Sistemas</div>
+                </div>
+                <div class="engineer-card">
+                    <div class="engineer-name">Daniela Cordoba</div>
+                    <div class="engineer-role">Especialista en Animaciones</div>
+                </div>
+                <div class="engineer-card">
+                    <div class="engineer-name">Rafaela Velasquez</div>
+                    <div class="engineer-role">Líder de Pruebas</div>
+                </div>
+                <div class="engineer-card">
+                    <div class="engineer-name">Elmer Ramos</div>
+                    <div class="engineer-role">Gerente de Proyecto</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const devices = [
+            { id: 1, name: "Luces de la Sala", icon: "💡", status: false, group: "Luces", keywords: ["luces", "luz", "sala", "iluminacion", "living"] },
+            { id: 2, name: "Luces del Dormitorio", icon: "💡", status: true, group: "Luces", keywords: ["luces", "luz", "dormitorio", "habitacion", "cuarto", "pieza"] },
+            { id: 3, name: "Luces de la Cocina", icon: "💡", status: false, group: "Luces", keywords: ["luces", "luz", "cocina"] },
+            { id: 4, name: "Televisor", icon: "📺", status: false, group: "Entretenimiento", keywords: ["televisor", "television", "tele", "tv"] },
+            { id: 5, name: "Reproductor de Música", icon: "🎵", status: true, group: "Entretenimiento", keywords: ["musica", "reproductor", "audio", "sonido"] },
+            { id: 6, name: "Aire Acondicionado", icon: "❄️", status: false, group: "Clima", keywords: ["aire", "acondicionado", "ac", "frio", "enfriar"] },
+            { id: 7, name: "Calefacción", icon: "🔥", status: false, group: "Clima", keywords: ["calefaccion", "calor", "calentar", "caliente"] },
+            { id: 8, name: "Puerta Principal", icon: "🚪", status: true, group: "Seguridad", keywords: ["puerta", "principal", "entrada"] },
+            { id: 9, name: "Cámara de Seguridad", icon: "📹", status: true, group: "Seguridad", keywords: ["camara", "seguridad", "vigilancia"] },
+            { id: 10, name: "Cafetera", icon: "☕", status: false, group: "Electrodomésticos", keywords: ["cafetera", "cafe"] },
+            { id: 11, name: "Aspiradora Robot", icon: "🤖", status: false, group: "Electrodomésticos", keywords: ["aspiradora", "robot", "limpiar", "limpieza"] },
+            { id: 12, name: "Persianas Inteligentes", icon: "🪟", status: true, group: "Ventanas", keywords: ["persianas", "ventanas", "cortinas"] }
+        ];
+
+        const loginScreen = document.getElementById('loginScreen');
+        const dashboard = document.getElementById('dashboard');
+        const contactPage = document.getElementById('contactPage');
+        const loginBtn = document.getElementById('loginBtn');
+        const homeBtn = document.getElementById('homeBtn');
+        const contactBtn = document.getElementById('contactBtn');
+        const usernameInput = document.getElementById('username');
+        const userName = document.getElementById('userName');
+        const userAvatar = document.getElementById('userAvatar');
+        const deviceGrid = document.getElementById('deviceGrid');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const voiceStatus = document.getElementById('voiceStatus');
+        const voiceFeedback = document.getElementById('voiceFeedback');
+
+        let recognition = null;
+        let isListening = false;
+
+        function initSpeechRecognition() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                voiceStatus.textContent = "⚠️ Tu navegador no soporta reconocimiento de voz";
+                voiceStatus.style.color = '#FF6B6B';
+                voiceBtn.disabled = true;
+                voiceBtn.style.opacity = '0.5';
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'es-ES';
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                isListening = true;
+                voiceBtn.classList.add('listening');
+                voiceStatus.textContent = "🎤 Escuchando... ¡Habla ahora!";
+                voiceStatus.style.color = 'white';
+                voiceFeedback.textContent = "";
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                if (interimTranscript) {
+                    voiceStatus.textContent = `Escuché: "${interimTranscript}"`;
+                }
+
+                if (finalTranscript) {
+                    const command = finalTranscript.toLowerCase().trim();
+                    voiceStatus.textContent = `📝 Dijiste: "${command}"`;
+                    processVoiceCommand(command);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Error de reconocimiento:', event.error);
+                
+                let errorMsg = '';
+                switch(event.error) {
+                    case 'no-speech':
+                        errorMsg = "No detecté ninguna voz. Intenta de nuevo.";
+                        break;
+                    case 'audio-capture':
+                        errorMsg = "No se puede acceder al micrófono.";
+                        break;
+                    case 'not-allowed':
+                        errorMsg = "⚠️ Permiso denegado. Activa el micrófono en la configuración.";
+                        break;
+                    case 'network':
+                        errorMsg = "Error de conexión. Verifica tu internet.";
+                        break;
+                    default:
+                        errorMsg = `Error: ${event.error}`;
+                }
+                
+                voiceStatus.textContent = errorMsg;
+                voiceStatus.style.color = '#FFD166';
+                voiceFeedback.textContent = "Intenta presionar el botón nuevamente";
+                resetVoiceButton();
+            };
+
+            recognition.onend = () => {
+                resetVoiceButton();
+            };
+        }
+
+        function resetVoiceButton() {
+            isListening = false;
+            voiceBtn.classList.remove('listening');
+            if (!voiceFeedback.textContent) {
+                setTimeout(() => {
+                    voiceStatus.textContent = "Presiona para hablar";
+                    voiceStatus.style.color = 'white';
+                }, 3000);
+            }
+        }
+
+        function processVoiceCommand(command) {
+            let action = null;
+            let deviceFound = null;
+
+            if (command.match(/\b(enciende|prende|activa|enciende|prender|encender|activar)\b/)) {
+                action = true;
+            } else if (command.match(/\b(apaga|desactiva|desactivar|apagar)\b/)) {
+                action = false;
+            }
+
+            if (action === null) {
+                voiceFeedback.textContent = "❌ No entendí la acción. Di 'enciende' o 'apaga'";
+                voiceFeedback.style.color = '#FFD166';
+                setTimeout(() => {
+                    voiceFeedback.textContent = "";
+                    voiceStatus.textContent = "Presiona para hablar";
+                }, 3000);
+                return;
+            }
+
+            for (const device of devices) {
+                for (const keyword of device.keywords) {
+                    if (command.includes(keyword)) {
+                        deviceFound = device;
+                        break;
+                    }
+                }
+                if (deviceFound) break;
+            }
+
+            if (deviceFound) {
+                toggleDevice(deviceFound.id, action);
+                const actionText = action ? 'encendido ✅' : 'apagado ❌';
+                voiceFeedback.textContent = `¡Perfecto! ${deviceFound.name} ${actionText}`;
+                voiceFeedback.style.color = 'white';
+                voiceFeedback.style.background = action ? 'rgba(78, 205, 196, 0.5)' : 'rgba(255, 107, 107, 0.5)';
+            } else {
+                voiceFeedback.textContent = "❓ No identifiqué el dispositivo. Intenta de nuevo";
+                voiceFeedback.style.color = '#FFD166';
+            }
+
+            setTimeout(() => {
+                voiceFeedback.textContent = "";
+                voiceFeedback.style.background = 'rgba(255,255,255,0.2)';
+                voiceStatus.textContent = "Presiona para hablar";
+            }, 4000);
+        }
+
+        function renderDevices() {
+            deviceGrid.innerHTML = '';
+            
+            const groupedDevices = devices.reduce((groups, device) => {
+                if (!groups[device.group]) groups[device.group] = [];
+                groups[device.group].push(device);
+                return groups;
+            }, {});
+
+            for (const [groupName, groupDevices] of Object.entries(groupedDevices)) {
+                const groupHeader = document.createElement('div');
+                groupHeader.className = 'group-header';
+                groupHeader.innerHTML = `<h2>${groupName}</h2>`;
+                deviceGrid.appendChild(groupHeader);
+
+                groupDevices.forEach(device => {
+                    const deviceCard = document.createElement('div');
+                    deviceCard.className = `device-card ${device.status ? 'active' : ''}`;
+                    deviceCard.innerHTML = `
+                        <div class="device-icon">${device.icon}</div>
+                        <div class="device-name">${device.name}</div>
+                        <div class="device-status">
+                            <div class="status-indicator ${device.status ? 'on' : ''}"></div>
+                            <div class="status-text">${device.status ? 'ENCENDIDO' : 'APAGADO'}</div>
+                        </div>
+                        <div class="device-controls">
+                            <button class="control-btn on-btn" onclick="toggleDevice(${device.id}, true)">ON</button>
+                            <button class="control-btn off-btn" onclick="toggleDevice(${device.id}, false)">OFF</button>
+                        </div>
+                    `;
+                    deviceGrid.appendChild(deviceCard);
+                });
+            }
+        }
+
+        function toggleDevice(id, status) {
+            const device = devices.find(d => d.id === id);
+            if (device) {
+                device.status = status;
+                renderDevices();
+            }
+        }
+
+        loginBtn.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            if (username) {
+                userName.textContent = username;
+                userAvatar.textContent = username.charAt(0).toUpperCase();
+                loginScreen.style.display = 'none';
+                dashboard.style.display = 'block';
+                renderDevices();
+                initSpeechRecognition();
+            } else {
+                alert('¡Por favor ingresa tu nombre!');
+            }
+        });
+
+        homeBtn.addEventListener('click', () => {
+            contactPage.style.display = 'none';
+            dashboard.style.display = 'block';
+        });
+
+        contactBtn.addEventListener('click', () => {
+            dashboard.style.display = 'none';
+            contactPage.style.display = 'block';
+        });
+
+        voiceBtn.addEventListener('click', () => {
+            if (!recognition) {
+                voiceStatus.textContent = "⚠️ Reconocimiento de voz no disponible";
+                return;
+            }
+
+            if (!isListening) {
+                try {
+                    recognition.start();
+                } catch (error) {
+                    if (error.name === 'InvalidStateError') {
+                        recognition.stop();
+                        setTimeout(() => {
+                            try {
+                                recognition.start();
+                            } catch (e) {
+                                console.error("Error al reintentar:", e);
+                                voiceStatus.textContent = "Error. Recarga la página.";
+                            }
+                        }, 200);
+                    } else {
+                        console.error("Error:", error);
+                        voiceStatus.textContent = "❌ Error al iniciar micrófono";
+                        voiceFeedback.textContent = "Verifica los permisos del navegador";
+                    }
+                }
+            } else {
+                recognition.stop();
+            }
+        });
+
+        usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loginBtn.click();
+        });
+    </script>
+</body>
+</html>
